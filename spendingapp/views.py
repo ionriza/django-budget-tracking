@@ -1,9 +1,9 @@
-from django.http import  HttpResponseRedirect
+from django.http import  HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
 from .models import Expense
 from .forms import ExpenseForm
 from datetime import datetime, timedelta
-
+import csv
 
 # Create your views here.
 def spending(request):
@@ -11,19 +11,31 @@ def spending(request):
     if request.GET.get('today'):
         value = request.GET.get('today')
         spendings = Expense.objects.filter(data=value).order_by('data')
+
     # Month button
     elif request.GET.get('month'):
         value = request.GET.get('month')
         spendings = Expense.objects.filter(data__month=value).order_by('data')
+
     # TODO: implement "Select week" button functionality
     elif request.GET.get('week'):
-        pass
+        value = request.GET.get('week')
+        year, week_number = map(int, value.split('-W'))
+        start_of_week = datetime.strptime(f'{year}-W{week_number}-1', '%Y-W%W-%w').date()
+        end_of_week = start_of_week + timedelta(days=6)
+        spendings = Expense.objects.filter(data__range=[start_of_week, end_of_week]).order_by('data')
+
     # TODO: implement "Select day" button functionality
     elif request.GET.get('day'):
-        pass
+        value = request.GET.get('day')
+        spendings = Expense.objects.filter(data=value).order_by('data')
+
     # TODO: implement "Select range" button functionality
-    elif request.GET.get('range'):
-        pass
+    elif request.GET.get('start_date') and request.GET.get('end_date'):
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+        spendings = Expense.objects.filter(data__range=[start_date, end_date]).order_by('data')
+
     # All Time button
     else:
         spendings = Expense.objects.all()
@@ -66,4 +78,26 @@ def adauga(request):
 # TODO: write a view function that will export the data
 #  in a csv file. also write a url for it
 def export(request):
-    pass
+    expenses = Expense.objects.all()
+    fieldnames = ['ID', 'Data', 'Vendor', 'Suma']
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="expenses.csv"'
+    writer = csv.DictWriter(response, fieldnames=fieldnames)
+    writer.writeheader()
+    for expense in expenses:
+        writer.writerow({
+            'ID': expense.id,
+            'Data': expense.data,
+            'Vendor': expense.vendor,
+            'Suma': expense.amount
+        })
+    return response
+
+
+def select_day_data(request):
+    return render(request, "select_day_data.html")
+
+
+def select_range_data(request):
+    return render(request,"select_range_data.html")
+
