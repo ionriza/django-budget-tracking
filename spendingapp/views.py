@@ -7,6 +7,7 @@ import csv
 
 # Create your views here.
 def spending(request):
+    category = ""
     # Today button
     if request.GET.get('today'):
         value = request.GET.get('today')
@@ -39,6 +40,13 @@ def spending(request):
     # All Time button
     else:
         spendings = Expense.objects.all()
+        # check if category parameter
+        category = request.GET.get("category")
+        if category:
+            spendings = Expense.objects.filter(category=category)
+
+    spendings_category = Expense.objects.all()
+    categories = {spending.category for spending in spendings_category}
 
     now = datetime.now()
     today = {
@@ -61,7 +69,7 @@ def spending(request):
     }
     total_amount = sum(spending.amount for spending in spendings)
     return render(request, "spending.html",
-                  {"spendings": spendings, "total_amount": total_amount, "today": today, "month": month, "week": week})
+                  {"spendings": spendings, "total_amount": total_amount, "today": today, "month": month, "week": week, "categories":categories,"selected_category":category})
 
 
 def adauga(request):
@@ -69,7 +77,7 @@ def adauga(request):
         form = ExpenseForm()
         return render(request, "adauga.html", {"form": form})
     elif request.method == 'POST':
-        form = ExpenseForm(request.POST)
+        form = ExpenseForm(request.POST,request.FILES)
         if form.is_valid():
             form.save()
         return HttpResponseRedirect("/")
@@ -100,4 +108,29 @@ def select_day_data(request):
 
 def select_range_data(request):
     return render(request,"select_range_data.html")
+
+
+
+def edit(request,id):
+    spending = Expense.objects.filter(id=id).first()
+    data_edit = spending.data.strftime("%y-%m-%d")
+    if request.method == 'GET':
+        return render(request, "edit.html",{"spending":spending,"data":data_edit})
+
+    elif request.method == 'POST':
+        form = ExpenseForm(request.POST, request.FILES, instance=spending)
+        file = request.FILES.get('image')
+        if not file:
+            request.FILES.update({"image":spending.image})
+            form = ExpenseForm(request.POST, request.FILES, instance=spending)
+        print(form.is_valid())
+        if form.is_valid():
+            form.save()
+        return HttpResponseRedirect("/")
+
+def delete(request,id):
+    Expense.objects.filter(id=id).delete()
+    return HttpResponseRedirect("/")
+
+
 
