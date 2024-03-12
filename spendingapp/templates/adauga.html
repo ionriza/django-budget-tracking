@@ -20,25 +20,35 @@
                 <label class="form-label">Vendor</label>
                 <input class="form-control" type="text" name="vendor">
             </div>
+
+            <div class="mb-3">
+                <label class="form-label">Description</label>
+                <input class="form-control" type="text" name="description">
+            </div>
+
             <div class="mb-3">
                 <label class="form-label">Data</label>
                 <input class="form-control" type="date" name="data">
             </div>
 
-             <div class="mb-3">
-                <label class="form-label">Icon</label>
-                <input class="form-control" type="text" name="icon">
-            </div>
-
-             <div class="mb-3">
-                <label class="form-label">Image</label>
-                <input class="form-control" type="file" name="image">
+            <div class="mb-3">
+                <label class="form-label">Category</label>
+                <select class="form-select" name="category">
+                    {%for category in categories %}
+                    <option value="{{category.id}}">{{category.name}}</option>
+                    {% endfor %}
+                </select>
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Category</label>
-                <input class="form-control" type="text" name="category">
+                <label class="form-label">Vendor</label>
+                <select class="form-select" name="vendor">
+                    {%for vendor in vendors %}
+                    <option value="{{vendor.id}}">{{vendor.name}}</option>
+                    {% endfor %}
+                </select>
             </div>
+
 
             <button type="submit" class="btn btn-primary">Submit</button>
         </form>

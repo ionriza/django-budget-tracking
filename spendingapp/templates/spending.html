@@ -36,7 +36,6 @@
             <th>Data</th>
             <th>Icon</th>
             <th>Image</th>
-            <th>Category</th>
             <th>Actions</th>
         </tr>
         {% for spending in spendings %}
@@ -44,12 +43,11 @@
             <td>{{spending.amount}}</td>
             <td>{{spending.vendor}}</td>
             <td>{{spending.data}}</td>
-            <td><i class="bi bi-{{spending.icon}}"></i></td>
-            <td><img src='media/{{spending.image}}' width="50" height="50"></td>
-            <td>{{spending.category}}</td>
+            <td><i class="bi bi-{{spending.category.icon}}"></i>{{spending.category.name}}</td>
+            <td><img src='media/{{spending.vendor.image}}' width="50" height="50"></td>
             <td>
                 <a href="edit/{{spending.id}}" class="btn btn-primary"><i class="bi bi-pencil-square"></i>Edit</a>
-                <a href="delete/{{delete.id}}" class="btn btn-danger"><i class="bi bi-trash"></i>Delete</a>
+                <a href="delete/{{spending.id}}" class="btn btn-danger" title="{{spending.id}}"><i class="bi bi-trash"></i>Delete</a>
             </td>
         </tr>
         {% endfor %}
@@ -62,10 +60,10 @@
             <option value="">All categories</option>
             {% endif %}
             {% for category in categories %}
-                {% if selected_category == category %}
-                    <option value="{{category}}" selected>{{category}}</option>
+                {% if selected_category == category.id %}
+                    <option value="{{category.id}}" selected>{{category.name}}</option>
                 {% else %}
-                    <option value="{{category}}">{{category}}</option>
+                    <option value="{{category.id}}">{{category.name}}</option>
             {% endif %}
             {% endfor %}
         </select>

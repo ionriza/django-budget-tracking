@@ -1,22 +1,28 @@
 from django.db import models
 
 
-# TODO: add 'icon'
-#  (will be used to represent an icon for the category - food, transport, health
-#  and we will use an icon library, i.e: bootstrap icons.
-#  a text field is enough)
+class Category(models.Model):
+    name = models.TextField()
+    icon = models.TextField()
 
-# TODO: add 'image'
-#  (will be used to represent the logo/image of a vendor,
-#  here we will use an imagefield and we will have to figure out
-#  how to upload photos in Django)
+    def __str__(self):
+        return self.name
+
+
+class Vendor(models.Model):
+    name = models.TextField()
+    image = models.ImageField(upload_to="images/")
+
+    def __str__(self):
+        return self.name
+
 
 class Expense(models.Model):
     amount = models.IntegerField()
     data = models.DateField()
-    vendor = models.TextField()
-    icon = models.TextField()
-    image = models.ImageField(upload_to="images/")
-    category = models.TextField()
+    description = models.TextField()
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE)
+
     def __str__(self):
-        return f'[{self.amount}]:{self.data} - {self.vendor}'
+        return f"[{self.data}]:{self.amount}"

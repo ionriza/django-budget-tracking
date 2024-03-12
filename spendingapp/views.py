@@ -1,6 +1,6 @@
 from django.http import  HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
-from .models import Expense
+from .models import Expense, Category, Vendor
 from .forms import ExpenseForm
 from datetime import datetime, timedelta
 import csv
@@ -43,10 +43,10 @@ def spending(request):
         # check if category parameter
         category = request.GET.get("category")
         if category:
-            spendings = Expense.objects.filter(category=category)
+            spendings = Expense.objects.filter(category__pk=category)
 
-    spendings_category = Expense.objects.all()
-    categories = {spending.category for spending in spendings_category}
+    categories = Category.objects.all()
+    vendors = Vendor.objects.all()
 
     now = datetime.now()
     today = {
@@ -69,15 +69,18 @@ def spending(request):
     }
     total_amount = sum(spending.amount for spending in spendings)
     return render(request, "spending.html",
-                  {"spendings": spendings, "total_amount": total_amount, "today": today, "month": month, "week": week, "categories":categories,"selected_category":category})
+                  {"spendings": spendings, "total_amount": total_amount, "today": today, "month": month, "week": week, "categories":categories,"selected_category":int(category)})
 
 
 def adauga(request):
     if request.method == 'GET':
+        categories = Category.objects.all()
+        vendors = Vendor.objects.all()
         form = ExpenseForm()
-        return render(request, "adauga.html", {"form": form})
+        return render(request, "adauga.html", {"form": form, "categories": categories, "vendors": vendors})
     elif request.method == 'POST':
         form = ExpenseForm(request.POST,request.FILES)
+        print()
         if form.is_valid():
             form.save()
         return HttpResponseRedirect("/")
@@ -113,17 +116,17 @@ def select_range_data(request):
 
 def edit(request,id):
     spending = Expense.objects.filter(id=id).first()
-    data_edit = spending.data.strftime("%y-%m-%d")
+    data_edit = spending.data.strftime("%Y-%m-%d")
+    print(data_edit)
     if request.method == 'GET':
-        return render(request, "edit.html",{"spending":spending,"data":data_edit})
+        categories = Category.objects.all()
+        vendors = Vendor.objects.all()
+        return render(request, "edit.html",{"spending":spending,"data":data_edit,"categories":categories,"vendors":vendors})
 
     elif request.method == 'POST':
-        form = ExpenseForm(request.POST, request.FILES, instance=spending)
-        file = request.FILES.get('image')
-        if not file:
-            request.FILES.update({"image":spending.image})
-            form = ExpenseForm(request.POST, request.FILES, instance=spending)
+        form = ExpenseForm(request.POST, instance=spending)
         print(form.is_valid())
+
         if form.is_valid():
             form.save()
         return HttpResponseRedirect("/")
